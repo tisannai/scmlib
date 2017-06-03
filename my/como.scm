@@ -30,7 +30,6 @@
 
 (use-modules (ice-9 format))
 
-
 ;; Call stored function.
 (define (call func)
    (eval func (interaction-environment)))
@@ -42,7 +41,7 @@
 (define (opt-name opt)
    (list-ref opt 0))
 
-;; TYPE: switch single opt-single multi opt-multi
+;; TYPE: hidden switch single opt-single multi opt-multi
 (define (opt-type opt)
    (list-ref opt 1))
 
@@ -63,12 +62,12 @@
    (list-set! opt 4 val))
 
 ;; Return option value.
-(define-public (opt-value opt)
+(define-public (opt-values opt)
    (list-ref opt 5))
 
 ;; Return first option value.
-(define-public (first-opt-value opt)
-   (car (opt-value opt)))
+(define-public (opt-value opt)
+   (car (opt-values opt)))
 
 ;; Set option's value attr.
 (define (set-opt-value! opt val)
@@ -80,14 +79,20 @@
       (list-set! opt 5 (list val))
       (append! (list-ref opt 5) (list val))))
 
-
+;; Return cli formatter.
 (define (opt-cli opt)
    ((list-ref opt 6) opt))
 
+;; Return info formatter.
 (define (opt-info opt)
    ((list-ref opt 7) opt))
 
 
+;;
+;; "cli" and "info" formatters for all option types.
+
+(define (opt-cli-help opt) #f)
+(define (opt-info-help opt) #f)
 
 (define (opt-cli-switch opt)
    (opt-sopt opt))
@@ -161,9 +166,34 @@
       (get-opt-from-opts (opt-opts como) name)))
 
 
+;; Check if option is mandatory.
+(define (required-opt? opt)
+   (case (opt-type opt)
+      ((help) #f)
+      ((switch) #f)
+      ((single) #t)
+      ((opt-single) #f)
+      ((multi) #t)
+      ((opt-multi) #f)
+      ((any) #t)
+      ((opt-any) #f)
+      ((default) #f)
+      ))
+
+
+;; Check if option is visible.
+(define (visible-opt? opt)
+   (case (opt-type opt)
+      ((help) #f)
+      (else #t)))
+
 
 ;;
 ;; Option spec creation.
+
+;; Help option.
+(define-public (help lopt sopt desc)
+   (list lopt 'help sopt desc #f '() opt-cli-help opt-info-help))
 
 ;; Switch option.
 (define-public (switch lopt sopt desc)
@@ -198,26 +228,32 @@
    (list lopt 'default sopt desc #f '() opt-cli-default opt-info-default))
 
 
+
+
+;; Parse command spec and store option descriptor to "como".
 (define (prepare-spec name author year spec)
-   (set! como (list
-                 (list 'name name)
-                 (list 'author author)
-                 (list 'year year)))
-   (append! como
-      (list
-         (list 'opts
-            (map
-               (lambda (i)
-                  (let (
-                          (type  (list-ref i 0))
-                          (lopt  (symbol->string (list-ref i 1)))
-                          (sopt  (symbol->string (list-ref i 2)))
-                          (desc  (list-ref i 3))
-                          )
-                     (let ((optcmd (list type lopt sopt desc)))
-                        (call optcmd))))
-               spec))))
-   como)
+   (let ((como '()))
+      (set! como (list
+                    (list 'name name)
+                    (list 'author author)
+                    (list 'year year)))
+      ;; Put help as first opt.
+      (append! como
+         (list
+            (list 'opts
+               (append (list (help "--help" "-h" "Help for usage."))
+                  (map
+                     (lambda (i)
+                        (let (
+                                (type  (list-ref i 0))
+                                (lopt  (symbol->string (list-ref i 1)))
+                                (sopt  (symbol->string (list-ref i 2)))
+                                (desc  (list-ref i 3))
+                                )
+                           (let ((optcmd (list type lopt sopt desc)))
+                              (call optcmd))))
+                     spec)))))
+      como))
 
 
 ;; Find option by "by" method.
@@ -239,10 +275,23 @@
          ;; Match short opt "-".
          (find-opt-by opt-sopt como (car cli)))
       (else
-         #f
-         )))
-;;         (parse-error (format #f "Invalid command line"))
-;;         #f)))
+         #f )))
+
+
+;; Parse option values.
+;;
+;; Return: (cnt . cli)
+(define (parse-values! opt cli take)
+   (let ((cnt 0))
+      (let parse ((rest cli))
+         (if (or (null? rest) (= cnt take))
+            (cons cnt rest)
+            (if (equal? #\- (car (string->list (car rest))))
+               (cons cnt rest)
+               (begin
+                  (add-opt-value! opt (car rest))
+                  (set! cnt (1+ cnt))
+                  (parse (cdr rest))))))))
 
 
 ;; Parse switch.
@@ -251,28 +300,13 @@
    (cdr cli))
 
 
-;; Parse option values.
-;; Return: (cnt . cli)
-(define (parse-values! opt cli take)
-   (let ((cnt 0))
-      (let parse ((cli cli))
-         (if (or (null? cli) (= cnt take))
-            (cons cnt cli)
-            (if (equal? #\- (car (string->list (car cli))))
-               (cons cnt cli)
-               (begin
-                  (add-opt-value! opt (car cli))
-                  (set! cnt (1+ cnt))
-                  (parse (cdr cli))))))))
-
-
 ;; Parse single.
 (define (parse-single! opt cli)
    (set-opt-given! opt #t)
    (set! cli (cdr cli))
    (let ((res (parse-values! opt cli 1)))
       (if (= 1 (car res))
-         (set! cli (cdr res))
+         (cdr res)
          (parse-error (format #f "Wrong number of values for: \"~a\"" (opt-name opt))))))
 
 
@@ -282,7 +316,7 @@
    (set! cli (cdr cli))
    (let ((res (parse-values! opt cli -1)))
       (if (> (car res) 0 )
-         (set! cli (cdr res))
+         (cdr res)
          (parse-error (format #f "Wrong number of values for: \"~a\"" (opt-name opt))))))
 
 
@@ -291,9 +325,10 @@
    (set-opt-given! opt #t)
    (set! cli (cdr cli))
    (let ((res (parse-values! opt cli -1)))
-      (set! cli (cdr res))))
+      (cdr res)))
 
 
+;; Como error report.
 (define (parse-error msg)
    (display "\nComo error: ")
    (display msg)
@@ -302,57 +337,73 @@
    (exit))
 
 
+;; Parse given command line. Update all option descriptors with given
+;; flag and values.
+;;
 ;; Process:
 ;; * Find option by cli.
 ;; *   Report error if option is not found.
 ;; * Use option parser.
 ;; * Collect option info to como.
+;;
+;; Return: true if we should exit with usage display.
 (define (parse-cli! como cli)
-   (let parse-next ((rest (cdr cli))) ; Skip first.
-      (cond
-         ((null? rest) #f)
-         (else
-            (let ((opt (find-opt-by-cli como rest)))
-               (if opt
-                  (case (opt-type opt)
-                     ((switch)     (parse-next (parse-switch! opt rest)))
-                     ((single)     (parse-next (parse-single! opt rest)))
-                     ((opt-single) (parse-next (parse-single! opt rest)))
-                     ((multi)      (parse-next (parse-multi!  opt rest)))
-                     ((opt-multi)  (parse-next (parse-multi!  opt rest)))
-                     ((any)        (parse-next (parse-any!    opt rest)))
-                     ((opt-any)    (parse-next (parse-any!    opt rest)))
-                     (else '()))
-                  (let ((default (find-opt-by opt-type como 'default)))
-                     (if default
-                        (begin
-                           (set-opt-given! default #t)
-                           (parse-values! default rest -1))
-                        (parse-error (string-append "Unknown option: " (car rest)))))))))))
+   (let ((do-usage #f))
+      (let parse-next ((rest (cdr cli))) ; Skip first.
+         (cond
+            ((null? rest) do-usage)
+            (else
+               (let ((opt (find-opt-by-cli como rest)))
+                  (if opt
+                     (case (opt-type opt)
+                        ((help)
+                           (set! do-usage #t)
+                           (parse-next (parse-switch! opt rest)))
+                        ((switch)     (parse-next (parse-switch! opt rest)))
+                        ((single)     (parse-next (parse-single! opt rest)))
+                        ((opt-single) (parse-next (parse-single! opt rest)))
+                        ((multi)      (parse-next (parse-multi!  opt rest)))
+                        ((opt-multi)  (parse-next (parse-multi!  opt rest)))
+                        ((any)        (parse-next (parse-any!    opt rest)))
+                        ((opt-any)    (parse-next (parse-any!    opt rest)))
+                        (else '()))
+                     (let ((default (find-opt-by opt-type como 'default)))
+                        (if default
+                           (begin
+                              (set-opt-given! default #t)
+                              (parse-values! default rest -1)
+                              do-usage )
+                           (parse-error (string-append "Unknown option: " (car rest))))))))))))
 
 
+;; Create "cli" portion of usage.
 (define (usage-list como)
    (let disp ((rest (opt-opts como)) (parts '()))
       (cond
          ((null? rest) parts)
          (else
-            (if (null? parts)
-               (set! parts (list (opt-cli (car rest))))
-               (append! parts (list (opt-cli (car rest)))))
+            (if (visible-opt? (car rest))
+               (if (null? parts)
+                  (set! parts (list (opt-cli (car rest))))
+                  (append! parts (list (opt-cli (car rest))))))
             (disp (cdr rest) parts)))))
 
 
+;; Create "info" portion of usage.
 (define (usage-desc como)
    (let disp ((rest (opt-opts como)))
       (cond
          ((null? rest) #f)
          (else
-            (display "  ")
-            (display (opt-info (car rest)))
-            (newline)
+            (if (visible-opt? (car rest))
+               (begin
+                  (display "  ")
+                  (display (opt-info (car rest)))
+                  (newline)))
             (disp (cdr rest))))))
 
 
+;; Display generated usage info.
 (define (usage como)
    (display "\n  ")
    (display
@@ -365,19 +416,7 @@
    )
 
 
-(define (required-opt? opt)
-   (case (opt-type opt)
-      ((switch) #f)
-      ((single) #t)
-      ((opt-single) #f)
-      ((multi) #t)
-      ((opt-multi) #f)
-      ((any) #t)
-      ((opt-any) #f)
-      ((default) #f)
-      ))
-
-
+;; Check that all required options have been given.
 (define (check-required como)
    (let check ((opts (opt-opts como)))
       (cond
@@ -388,29 +427,51 @@
                   (check (cdr opts)))))))
 
 
-
 ;;
 ;; Como public API:
 
 (define-public como '())
 
+;; Specify cli, parse cli, and check for required args.
+(define-public (como-command name author year spec)
+   (set! como (prepare-spec name author year spec))
+   (let ((do-usage (parse-cli! como (command-line))))
+      (if do-usage
+         (begin
+            (usage como)
+            (exit))))
+   (check-required como))
+
+;; Display usage info.
+(define-public (como-usage)
+   (usage como))
+
+;; Get option by name (tag).
 (define-public (como-opt opt)
    (get-opt como opt))
 
+;; Check if option was given.
 (define-public (como-given? opt)
    (opt-given? (get-opt como opt)))
 
+;; Return all option values.
 (define-public (como-values opt)
+   (opt-values (get-opt como opt)))
+
+;; Return single (first) option value.
+(define-public (como-value opt)
    (opt-value (get-opt como opt)))
 
-(define-public (como-value opt)
-   (first-opt-value (get-opt como opt)))
-
-(define-public (como-command name author year spec)
-   (let ((como (prepare-spec name author year spec)))
-      (parse-cli! como (command-line))
-      (check-required como)
-      ))
-
-(define-public (como-usage)
-   (usage como))
+;;
+;; Execute "prog" if opt was given. "prog" takes the option as
+;; arguement.
+;;
+;; Example:
+;;    (como-if-given "file"
+;;       (lambda (opt)
+;;          (display (opt-value opt))
+;;          (newline)))
+(define-public (como-if-given name prog)
+   (let ((opt (como-opt name)))
+      (if (opt-given? opt)
+         (prog opt))))
