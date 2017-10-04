@@ -20,9 +20,8 @@
 ;;     (display "Got file option\n")
 ;;     )
 ;;
-;; (define d (get-opt como '()))
-;; (if (opt-given? d)
-;;     (display (opt-value d)))
+;; (if (como-given? '())
+;;     (display (como-value '())))
 ;;
 
 
