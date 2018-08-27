@@ -4,24 +4,26 @@
 ;;
 ;; Spec example:
 ;;
-;;    (como-command "como_trial" "Tero Isannainen" "2017"
-;;       '(
-;;           [opt-single     file     -f    "File name."]
-;;           [single         dir      -d    "Dir name."]
-;;           [multi          seg      -s    "Segment name."]
-;;           [switch         path     -p    "Full path display."]
-;;           [default        -        -     "Rest of args."]
-;;           ))
+;;     (use-modules (my como))
+;;
+;;     (como-command "como_trial" "Tero Isannainen" "2017"
+;;        '(
+;;            [opt-single     file     -f    "File name."]
+;;            [single         dir      -d    "Dir name."]
+;;            [multi          seg      -s    "Segment name."]
+;;            [switch         path     -p    "Full path display."]
+;;            [default        -        -     "Rest of args."]
+;;            ))
 ;;
 ;; Option query examples:
 ;;
-;; (como-usage)
-;; (if (como-given? "file")
-;;     (display "Got file option\n")
-;;     )
+;;     (como-usage)
+;;     (if (como-given? "file")
+;;         (display "Got file option\n")
+;;         )
 ;;
-;; (if (como-given? '())
-;;     (display (como-value '())))
+;;     (if (como-given? '())
+;;         (display (como-value '())))
 ;;
 
 
