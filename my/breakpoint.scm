@@ -5,7 +5,7 @@
 ;;
 ;; Breakpoint module requires 'trace' egg and loading of both 'trace'
 ;; and including 'breakpoint'. Example:
-;;     (include "breakpoin")
+;;     (include "breakpoint")
 ;;     (use trace)
 ;;     ...
 ;;     (break breakpoint#here)
