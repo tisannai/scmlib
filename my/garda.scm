@@ -3,7 +3,7 @@
 ;; garda.scm: Command Line Options library for Chichen Scheme. Guile
 ;; version is called como.scm. The API still uses "como" based naming.
 
-;; Parse spec and handle cli arguments (from argv).
+;; Parse spec and handle cli arguments (from "(command-line-arguments)").
 ;;
 ;; Spec example:
 ;;
@@ -385,7 +385,7 @@
     ;; Return: true if we should exit with usage display.
     (define (parse-cli! como cli)
         (let ((do-usage #f))
-            (let parse-next ((rest (cdr cli))) ; Skip first.
+            (let parse-next ((rest cli))
                 (cond
                     ((null? rest) do-usage)
                     (else
@@ -480,7 +480,7 @@
         ;; Remove first 2 from (argv) since there is "csi -s" coming as
         ;; extra from runchicken. "(parse-cli!)" will remove the script
         ;; name.
-        (let ((do-usage (parse-cli! como (list-tail (argv) 2))))
+        (let ((do-usage (parse-cli! como (command-line-arguments))))
             (if do-usage
                 (begin
                     (usage como)
