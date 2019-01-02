@@ -29,8 +29,15 @@
     ;; Usage:
     ;;     (set!-values (a b) '(100 200))
     (define-syntax set!-values
-        (syntax-rules ()
-            ((_ (sym ...) '(val ...)) (begin (set! sym val) ...))))
+        (ir-macro-transformer
+            (lambda (exp inject compare)
+                (let ((syms (cadr exp))
+                         (vals (caddr exp)))
+                    `(let loop ((s (quote ,syms))
+                                   (v ,vals))
+                         (when (pair? s)
+                             (eval (list 'set! (car s) (car v)))
+                             (loop (cdr s) (cdr v))))))))
 
 
     ;; Create variables with undefined start values.
