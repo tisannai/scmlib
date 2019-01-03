@@ -27,8 +27,8 @@
     ;; Set multiple variables from list.
     ;;
     ;; Usage:
-    ;;     (set!-values (a b) '(100 200))
-    (define-syntax set!-values
+    ;;     (set!-many (a b) '(100 200))
+    (define-syntax set!-many
         (ir-macro-transformer
             (lambda (exp inject compare)
                 (let ((syms (cadr exp))
