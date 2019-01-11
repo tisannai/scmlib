@@ -3,6 +3,54 @@
 ;; ============================================================
 
 ;; ------------------------------------------------------------
+;; File access:
+
+(use fmt)
+(use utils)
+
+(define filename "sample.txt")
+
+;; Scheme standard access.
+
+;; Write lines to a file using seperate commands.
+(define fh (open-output-file filename))
+(fmt fh "This is sample text line 1.\n")
+(fmt fh "This is sample text line 2.\n")
+(close-output-port fh)
+
+;; Write lines to a file using high-order function.
+(call-with-output-file filename
+    (lambda (fh)
+        (fmt fh "This is sample text line 1.\n")
+        (fmt fh "This is sample text line 2.\n")))
+
+;; Print lines from file using separate commands.
+(let ((fh (open-input-file filename)))
+    (let loop ((line (read-line fh)))
+        (when (not (eof-object? line))
+            (print line)
+            (loop (read-line fh))))
+    (close-input-port fh))
+
+;; Print lines from file using high-order function.
+(call-with-input-file filename
+    (lambda (fh)
+        (let loop ((line (read-line fh)))
+            (when (not (eof-object? line))
+                (print line)
+                (loop (read-line fh))))))
+
+
+;; Read the whole file to string.
+(define content (read-all filename))
+(define lines (read-lines filename))
+
+;; Remove file.
+(use files)
+(delete-file filename)
+
+
+;; ------------------------------------------------------------
 ;; Coops:
 
 (use coops)
@@ -122,3 +170,44 @@
 ;; Complete list can be unquoted with "@".
 `(1 ,@(list 2 3 4))   ; (1 2 3 4)
 
+
+
+;; ------------------------------------------------------------
+;; Vector:
+
+(define vec #(1 2 3))
+(vector-ref vec 2)
+(vector-length vec)
+(vector-set! vec 0 12)
+vec
+
+
+;; ------------------------------------------------------------
+;; Loops and iterations:
+
+(define coll '())
+
+(let named-let ((i 0))
+    (when (< i 4)
+        (print i)
+        (set! coll (append coll (list (+ i 1))))
+        (named-let (+ i 1))))
+
+(map
+    (lambda (item)
+        (* item 2))
+    coll)
+
+(for-each
+    (lambda (item)
+        (print item))
+    coll)
+
+
+;; ------------------------------------------------------------
+;; Hash
+
+(use srfi-69)
+(define h (make-hash-table))
+(hash-table-set! h 'a 123)
+(hash-table-ref h 'a)
