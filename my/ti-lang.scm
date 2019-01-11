@@ -24,6 +24,18 @@
                 (loop (+ times-i 1)))))
 
 
+    ;; Let multiple variables from list.
+    ;;
+    ;; Usage:
+    ;;     (let-many (a b) '(100 200)
+    ;;         (print a))
+    (define-syntax let-many
+        (syntax-rules ()
+            ((_ (syms ...) vals expr . exprs)
+                (let ((syms (if #f #f)) ...)
+                    (set!-values (syms ...) (apply values vals))
+                    expr . exprs))))
+
     ;; Set multiple variables from list.
     ;;
     ;; Usage:
@@ -39,9 +51,9 @@
     ;; Create variables with undefined start values.
     ;;
     ;; Usage:
-    ;;     (letnil (a b)
+    ;;     (let-nil (a b)
     ;;         (set! a 200))
-    (define-syntax letnil
+    (define-syntax let-nil
         (syntax-rules ()
             ((_ (sym ...) expr . exprs)
                 (let ((sym (if #f #f)) ...) expr . exprs))))
