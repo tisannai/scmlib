@@ -6,7 +6,7 @@
 (module ti-lang
     (
         times
-        set!-values
+        set!-many
         letnil
         )
 
