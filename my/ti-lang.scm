@@ -58,4 +58,19 @@
             ((_ (sym ...) expr . exprs)
                 (let ((sym (if #f #f)) ...) expr . exprs))))
 
+
+    ;; Append to list variable
+    ;;
+    ;; Usage:
+    ;;     (define l1 '(1 2 3))
+    ;;     (append! l1 '(123))
+    ;;  -> (1 2 3 123)
+    (define-syntax append-set!
+        (syntax-rules ()
+            ([_ var lst] (set! var (append var lst)))))
+
+    ;; Take car of list and convert it to single item list.
+    (define (lcar lst)
+        (list (car lst)))
+
     )
