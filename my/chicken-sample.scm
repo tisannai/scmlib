@@ -203,6 +203,33 @@ vec
         (print item))
     coll)
 
+(fold
+    (lambda (a x)
+        (print "x:" x)
+        (+ a (* x x)))
+    0
+    '(1 2 3 4 5))
+
+(foldl
+    (lambda (a x)
+        (print "a:" a)
+        (print "x:" x)
+        (+ a (* x x)))
+    0
+    '(1 2 3 4 5))
+
+(foldr
+    (lambda (a x)
+        (print "x:" x)
+        (+ a (* x x)))
+    0
+    '(1 2 3 4 5))
+
+;; Reverse list.
+(fold cons '() '(1 2 3 4))
+(foldl cons '() '(1 2 3 4))
+(foldr cons '() '(1 2 3 4))
+
 
 ;; ------------------------------------------------------------
 ;; Hash
