@@ -25,4 +25,5 @@
     (define h-each hash-table-for-each)
     (define h-keys hash-table-keys)
     (define h-vals hash-table-values)
+    (define h-has? hash-table-exists?)
     )
