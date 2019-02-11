@@ -13,17 +13,17 @@
 ;;     --> REPL is entered here...
 ;;
 ;; In order to run "my-script" and stop at breakpoint, perform:
-;;     shell> csi my-script -- arg1 arg2 
+;;     shell> csi my-script -- arg1 arg2
 ;;
 ;; "arg1", "arg2", etc. will become cli arguments for the script.
 
 (module breakpoint
     (
-        here
-        )
-    
-    (import scheme)
-    (import chicken)
+     here
+     )
 
-    (define (here) #t)
-    )
+  (import scheme)
+  (import chicken)
+
+  (define (here) #t)
+  )

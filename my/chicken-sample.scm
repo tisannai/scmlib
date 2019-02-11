@@ -20,25 +20,25 @@
 
 ;; Write lines to a file using high-order function.
 (call-with-output-file filename
-    (lambda (fh)
-        (fmt fh "This is sample text line 1.\n")
-        (fmt fh "This is sample text line 2.\n")))
+  (lambda (fh)
+    (fmt fh "This is sample text line 1.\n")
+    (fmt fh "This is sample text line 2.\n")))
 
 ;; Print lines from file using separate commands.
 (let ((fh (open-input-file filename)))
-    (let loop ((line (read-line fh)))
-        (when (not (eof-object? line))
-            (print line)
-            (loop (read-line fh))))
-    (close-input-port fh))
+  (let loop ((line (read-line fh)))
+    (when (not (eof-object? line))
+      (print line)
+      (loop (read-line fh))))
+  (close-input-port fh))
 
 ;; Print lines from file using high-order function.
 (call-with-input-file filename
-    (lambda (fh)
-        (let loop ((line (read-line fh)))
-            (when (not (eof-object? line))
-                (print line)
-                (loop (read-line fh))))))
+  (lambda (fh)
+    (let loop ((line (read-line fh)))
+      (when (not (eof-object? line))
+        (print line)
+        (loop (read-line fh))))))
 
 
 ;; Read the whole file to string.
@@ -57,17 +57,17 @@
 
 ;; "<counter>" is class name.
 (define-class <counter> ()
-    ((count 0)))
+  ((count 0)))
 
 ;; "count" is method.
 ;; "counter" is object.
 ;; "<counter>" is class.
 ;; "slot-value <obj> <member>" can be used as lvalue and rvalue.
 (define-method (count (counter <counter>) step)
-    (set! (slot-value counter 'count) (+ (slot-value counter 'count) step)))
+  (set! (slot-value counter 'count) (+ (slot-value counter 'count) step)))
 
 (define-method (value (counter <counter>))
-    (slot-value counter 'count))
+  (slot-value counter 'count))
 
 ;; Create class instance with "make".
 (define cnt (make <counter>))
@@ -82,13 +82,13 @@
 ;; Define record "unit".
 ;; Members: "name", "vars".
 (define-record unit
-    name
-    vars)
+  name
+  vars)
 
 ;; Record "constructor".
 (define (unit-new name)
-    ;; Some documenting text here.
-    (make-unit name '()))
+  ;; Some documenting text here.
+  (make-unit name '()))
 
 (define u (unit-new "foobar"))
 
@@ -103,27 +103,27 @@
 ;; Syntax-rules example:
 ;;     (madd 1 + 2)
 (define-syntax madd
-    (syntax-rules ()
-        ((_ a + b) (+ a b))))
+  (syntax-rules ()
+    ((_ a + b) (+ a b))))
 
 ;; Syntax-rules for "when".
 (define-syntax mwhen
-    (syntax-rules ()
-        ((_ kond (stmt ...))
-            (if kond
-                (begin
-                    stmt
-                    ...
-                    )))))
+  (syntax-rules ()
+    ((_ kond (stmt ...))
+     (if kond
+         (begin
+           stmt
+           ...
+           )))))
 
 ;; er-macro-transformer style version of "madd".
 (define-syntax er-add
-    (er-macro-transformer
-        (lambda (exp rename compare)
-            (let ((plussign +)
-                     (a1 (cadr exp))
-                     (a2 (cadddr exp)))
-                `(,plussign ,a1 ,a2)))))
+  (er-macro-transformer
+   (lambda (exp rename compare)
+     (let ((plussign +)
+           (a1 (cadr exp))
+           (a2 (cadddr exp)))
+       `(,plussign ,a1 ,a2)))))
 
 ;; ir-macro-transformer style version of "mwhen".
 ;;
@@ -136,11 +136,11 @@
 ;;        (print a)
 ;;        (print a)))
 (define-syntax ir-when
-    (ir-macro-transformer
-        (lambda (exp inject compare)
-            (let ((kond (cadr exp))
-                     (body (cddr exp)))
-                `(if ,kond (begin ,@body))))))
+  (ir-macro-transformer
+   (lambda (exp inject compare)
+     (let ((kond (cadr exp))
+           (body (cddr exp)))
+       `(if ,kond (begin ,@body))))))
 
 
 ;; ------------------------------------------------------------
@@ -148,15 +148,15 @@
 
 ;; Lambda without parens means variable args.
 (define var-args-open
-    (lambda args
-        (print (length args))))
+  (lambda args
+    (print (length args))))
 
 (var-args-open 1 2 3 4) ; 4
 
 ;; Lambda with dot.
 (define var-args
-    (lambda (first . args)
-        (print (length (append (list first) args)))))
+  (lambda (first . args)
+    (print (length (append (list first) args)))))
 
 (var-args 1 2 3 4) ; 4
 
@@ -188,42 +188,42 @@ vec
 (define coll '())
 
 (let named-let ((i 0))
-    (when (< i 4)
-        (print i)
-        (set! coll (append coll (list (+ i 1))))
-        (named-let (+ i 1))))
+  (when (< i 4)
+    (print i)
+    (set! coll (append coll (list (+ i 1))))
+    (named-let (+ i 1))))
 
 (map
-    (lambda (item)
-        (* item 2))
-    coll)
+ (lambda (item)
+   (* item 2))
+ coll)
 
 (for-each
-    (lambda (item)
-        (print item))
-    coll)
+ (lambda (item)
+   (print item))
+ coll)
 
 (fold
-    (lambda (a x)
-        (print "x:" x)
-        (+ a (* x x)))
-    0
-    '(1 2 3 4 5))
+ (lambda (a x)
+   (print "x:" x)
+   (+ a (* x x)))
+ 0
+ '(1 2 3 4 5))
 
 (foldl
-    (lambda (a x)
-        (print "a:" a)
-        (print "x:" x)
-        (+ a (* x x)))
-    0
-    '(1 2 3 4 5))
+ (lambda (a x)
+   (print "a:" a)
+   (print "x:" x)
+   (+ a (* x x)))
+ 0
+ '(1 2 3 4 5))
 
 (foldr
-    (lambda (a x)
-        (print "x:" x)
-        (+ a (* x x)))
-    0
-    '(1 2 3 4 5))
+ (lambda (a x)
+   (print "x:" x)
+   (+ a (* x x)))
+ 0
+ '(1 2 3 4 5))
 
 ;; Reverse list.
 (fold cons '() '(1 2 3 4))
