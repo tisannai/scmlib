@@ -6,8 +6,13 @@
 (module ti-lang
     (
      times
+     let-many
      set!-many
-     letnil
+     let-nil
+     append-set!
+     lcar
+     inc!
+     inc1!
      )
 
   (import scheme)
@@ -72,5 +77,15 @@
   ;; Take car of list and convert it to single item list.
   (define (lcar lst)
     (list (car lst)))
+
+  ;; Increment variable by value.
+  (define-syntax inc!
+    (syntax-rules ()
+      ((_ var inc) (set! var (+ var inc)))))
+
+  ;; Increment variable by 1.
+  (define-syntax inc1!
+    (syntax-rules ()
+      ((_ var) (set! var (+ var 1)))))
 
   )
