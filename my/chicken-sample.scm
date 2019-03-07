@@ -162,6 +162,19 @@
 
 
 ;; ------------------------------------------------------------
+;; Multiple values:
+
+;; Set three variables in one expression.
+(set!-values (a b c) (values 1 2 3))
+
+;; Convert list into multiple values.
+(apply values '(1 2 3))
+
+;; Set three values to one variable.
+(set!-values three (values 1 2 3))
+
+
+;; ------------------------------------------------------------
 ;; Quasiquote:
 
 ;; Quoting exceptions are marked with ",".
