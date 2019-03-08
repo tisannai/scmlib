@@ -1,6 +1,6 @@
 ;; -*- scheme-chicken -*-
 
-;; garda.scm: Command Line Options library for Chichen Scheme. Guile
+;; garda.scm: Command Line Options library for Chicken Scheme. Guile
 ;; version is called como.scm. The API still uses "como" based naming.
 
 ;; Parse spec and handle cli arguments (from "(command-line-arguments)").
@@ -29,8 +29,6 @@
 ;;     (if (como-given? '())
 ;;         (display (como-value '())))
 ;;
-
-;;(include "breakpoint")
 
 (module garda
     (
@@ -62,8 +60,6 @@
   (use srfi-13)
 
   (import fmt)
-
-  ;;   (import breakpoint)
 
 
   ;; Call stored function.
