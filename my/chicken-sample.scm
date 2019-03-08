@@ -173,6 +173,9 @@
 ;; Set three values to one variable.
 (set!-values three (values 1 2 3))
 
+;; Convert arguments to multiple values and convert them back.
+(receive (values 1 2 3))
+
 
 ;; ------------------------------------------------------------
 ;; Quasiquote:
