@@ -268,9 +268,43 @@ h
   (with-output-to-file
     (string->path filename)
     (lambda ()
-      (write-yaml
-       data))
+      (write-yaml data))
     #:exists 'replace))
+
+
+;; ------------------------------------------------------------
+;; JSON:
+
+(require json)
+
+;; Load JSON file (to hash).
+(define (load-json filename)
+  (with-input-from-file
+    (string->path filename)
+    (lambda ()
+      (read-json))))
+
+;; Dump data (hash) to JSON file.
+(define (dump-json filename data)
+  (with-output-to-file
+    (string->path filename)
+    (lambda ()
+      (write-json data))
+    #:exists 'replace))
+
+;; Dump data (hash) to JSON file with the help of "jq". Use subprocess
+;; based piping.
+(define (dump-pretty-json filename data)
+  (let*-values
+      ;; Open the JSON-file port for "jq".
+      ([(ofh) (open-output-file filename #:mode 'text #:exists 'replace)]
+       ;; Create "jq" subprocess with stdout as "ofh".
+       ;;    sub->  ->sub sub->               out in err
+       [(sub stdout stdin stderr) (subprocess ofh #f #f (find-executable-path "jq" #f) ".")])
+    (write-json h stdin)
+    (close-output-port stdin)
+    (close-output-port ofh)
+    (close-input-port stderr)))
 
 
 ;; ------------------------------------------------------------
