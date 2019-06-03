@@ -301,7 +301,7 @@ h
        ;; Create "jq" subprocess with stdout as "ofh".
        ;;    sub->  ->sub sub->               out in err
        [(sub stdout stdin stderr) (subprocess ofh #f #f (find-executable-path "jq" #f) ".")])
-    (write-json h stdin)
+    (write-json data stdin)
     (close-output-port stdin)
     (close-output-port ofh)
     (close-input-port stderr)))
@@ -317,3 +317,29 @@ h
 (car (regexp-match re msg))
 (regexp-split re msg)
 (regexp-replace re msg "your")
+
+
+;; ------------------------------------------------------------
+;; Load code to current module:
+(define-namespace-anchor example-ns)
+(parameterize ((current-namespace (namespace-anchor->namespace example-ns)))
+  (load "racket-sample.rkt"))
+
+
+;; ------------------------------------------------------------
+;; Module usage:
+
+(module example racket
+
+  (provide
+   hello-world
+   )
+
+;;  (require racket)
+
+  (define (hello-world)
+    (displayln "hello world!"))
+  )
+
+(require 'example)
+(hello-world)
