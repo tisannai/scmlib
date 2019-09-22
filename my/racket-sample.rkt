@@ -343,3 +343,11 @@ h
 
 (require 'example)
 (hello-world)
+
+
+;; ------------------------------------------------------------
+;; Exceptions:
+
+(with-handlers ((exn:fail:filesystem?
+                 (lambda (exn) (displayln "no such file..."))))
+  (delete-file "file-does-not-exist.txt"))
