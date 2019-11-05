@@ -1,4 +1,6 @@
-;; como.scm: Command Line Options library for Scheme.
+;; -*-scheme-*-
+
+;; como.scm: Command Line Options library for Scheme (Guile).
 
 ;; Parse spec and handle cli arguments (from argv).
 ;;
