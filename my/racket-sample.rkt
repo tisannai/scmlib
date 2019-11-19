@@ -351,3 +351,21 @@ h
 (with-handlers ((exn:fail:filesystem?
                  (lambda (exn) (displayln "no such file..."))))
   (delete-file "file-does-not-exist.txt"))
+
+
+;; ------------------------------------------------------------
+;; Debugging:
+
+;; Load debug language.
+#lang debug racket
+
+;; Print expression and its value.
+#R(+ 1 2)
+
+;; Open REPL and inspect values.
+(define a 12)
+(debug-repl)
+
+;; ...
+;; -> (displayln a)
+;; Control-D to quit
