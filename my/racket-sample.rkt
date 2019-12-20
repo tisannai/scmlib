@@ -356,6 +356,9 @@ h
 ;; ------------------------------------------------------------
 ;; Debugging:
 
+;; NOTE: (debug-repl) is also available with:
+;;     (require debug/repl)
+
 ;; Load debug language.
 #lang debug racket
 
@@ -369,3 +372,4 @@ h
 ;; ...
 ;; -> (displayln a)
 ;; Control-D to quit
+
